@@ -1,0 +1,179 @@
+package Project1;
+/*
+    NAME: Luis Calvillo
+    DATE: February 23rd 2024
+    DESCRIPTION: A program that tracks seats on a specific airplane
+    TITLE: Driver.java
+*/
+
+import java.util.Scanner;
+
+public class Driver {
+
+    public static void main(String[] args) {
+        Scanner keyboard = new Scanner(System.in);
+
+        // Creating seat objects with specified passenger names and types
+        Seat oneA = new Seat("Kathryn Janeway", false, Seat.SeatType.STANDARD);
+        Seat oneB = new Seat();
+        Seat oneC = new Seat("Arthur Dent", false, Seat.SeatType.STANDARD);
+        Seat twoA = new Seat();
+        Seat twoB = new Seat("Han Solo", false, Seat.SeatType.STANDARD);
+        Seat twoC = new Seat();
+        Seat threeA = new Seat("James Kirk", false, Seat.SeatType.EXTRA_LEGROOM);
+        Seat threeB = new Seat();
+        Seat threeC = new Seat();
+        Seat fourA = new Seat("Jean-Luc Picard", false, Seat.SeatType.STANDARD);
+        Seat fourB = new Seat();
+        Seat fourC = new Seat();
+
+        // Array to hold seat objects
+        Seat[][] planeSeats = {
+                {oneA, oneB, oneC},
+                {twoA, twoB, twoC},
+                {threeA, threeB, threeC},
+                {fourA, fourB, fourC}
+        };
+
+        int choice = 0;
+
+        // Main menu loop
+        while (choice != 5) {
+            System.out.println("\n=== Main Menu ===");
+            System.out.println("1. View current seat status");
+            System.out.println("2. Display current passenger list");
+            System.out.println("3. Reserve a seat");
+            System.out.println("4. Search passenger by name");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+
+            if (!keyboard.hasNextInt()) {
+                System.out.println("Invalid input. Please enter a number between 1 and 5.");
+                keyboard.nextLine(); // clear bad token
+                continue;
+            }
+            choice = keyboard.nextInt();
+
+            // Handling user choice
+            if (choice == 1) {
+                printCurrentSeatStatus(planeSeats);
+            } else if (choice == 2) {
+                printPassengerList(planeSeats);
+            } else if (choice == 3) {
+                selectSeat(planeSeats, keyboard);
+            } else if (choice == 4) {
+                searchPassengerByName(planeSeats, keyboard);
+            } else if (choice == 5) {
+                System.out.println("Exiting program...");
+            } else {
+                System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+            }
+        }
+
+        keyboard.close();
+    }
+
+    // Method to print the current seat status (A = Available, X = Occupied)
+    public static void printCurrentSeatStatus(Seat[][] x) {
+        System.out.println("\nSeat Status (A=Available, X=Occupied)");
+        System.out.println("   A B C");
+        for (int i = 0; i < x.length; i++) {
+            System.out.printf("%d  ", i + 1);
+            for (int j = 0; j < x[i].length; j++) {
+                System.out.print(x[i][j].getAvailable() ? "A " : "X ");
+            }
+            System.out.println();
+        }
+    }
+
+    // Method to print the current passenger list
+    public static void printPassengerList(Seat[][] x) {
+        System.out.println("\nCurrent Passengers:");
+        boolean any = false;
+        for (int i = 0; i < x.length; i++) {
+            for (int j = 0; j < x[i].length; j++) {
+                Seat s = x[i][j];
+                if (!s.getAvailable()) {
+                    char col = (char) ('A' + j);
+                    System.out.println("Seat " + (i + 1) + col + ": " + s.getPassengerName() + " (" + s.getType() + ")");
+                    any = true;
+                }
+            }
+        }
+        if (!any) {
+            System.out.println("No passengers yet.");
+        }
+    }
+
+    // Method to reserve a seat (interactive)
+    public static void selectSeat(Seat[][] x, Scanner keyboard) {
+        System.out.print("Enter passenger name: ");
+        keyboard.nextLine(); // consume leftover newline from previous nextInt
+        String fullName = keyboard.nextLine().trim();
+        if (fullName.isEmpty()) {
+            System.out.println("Name cannot be empty.");
+            return;
+        }
+
+        System.out.print("Enter preferred row (1-4): ");
+        if (!keyboard.hasNextInt()) {
+            System.out.println("Invalid input. Row must be a number between 1 and 4.");
+            keyboard.nextLine();
+            return;
+        }
+        int inputRow = keyboard.nextInt();
+        if (inputRow < 1 || inputRow > x.length) {
+            System.out.println("Invalid row. Please enter a number between 1 and " + x.length + ".");
+            return;
+        }
+        int row = inputRow - 1;
+
+        System.out.print("Enter preferred seat (A, B, or C): ");
+        String letter = keyboard.next().trim().toUpperCase();
+        if (letter.length() != 1 || letter.charAt(0) < 'A' || letter.charAt(0) >= 'A' + x[row].length) {
+            System.out.println("Invalid seat letter. Please enter A, B, or C.");
+            return;
+        }
+
+        if (selectSeat(row, letter, fullName, x)) {
+            System.out.println("Seat reserved successfully!");
+        } else {
+            System.out.println("Seat already taken. Please select another seat.");
+        }
+    }
+
+    // Overloaded method to select a seat (logic)
+    public static boolean selectSeat(int row, String letter, String passengerName, Seat[][] x) {
+        int column = letter.toUpperCase().charAt(0) - 'A';
+        if (column < 0 || column >= x[row].length) return false;
+
+        if (x[row][column].getAvailable()) {
+            x[row][column].setPassengerName(passengerName);
+            x[row][column].setAvailable(false);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Method to search for a passenger by name
+    public static void searchPassengerByName(Seat[][] x, Scanner keyboard) {
+        System.out.print("Enter passenger name: ");
+        keyboard.nextLine(); // consume leftover newline
+        String fullName = keyboard.nextLine().trim();
+
+        for (int i = 0; i < x.length; i++) {
+            for (int j = 0; j < x[i].length; j++) {
+                Seat s = x[i][j];
+                if (!s.getAvailable() && s.getPassengerName().equalsIgnoreCase(fullName)) {
+                    char col = (char) ('A' + j);
+                    System.out.printf("Passenger found: %s at seat %d%s (%s)\n",
+                            s.getPassengerName(), i + 1, col, s.getType());
+                    return;
+                }
+            }
+        }
+
+        System.out.println("Passenger not found.");
+    }
+}
