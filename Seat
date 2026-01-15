@@ -1,0 +1,51 @@
+package Project1;
+
+public class Seat extends Driver {
+
+    private String passengerName;
+    private Boolean available;
+    public enum SeatType {STANDARD, EXTRA_LEGROOM};
+    private SeatType type;
+
+    public Seat() {
+        passengerName = "";
+        available = true;
+        type = SeatType.STANDARD;
+    }
+
+    public Seat(String passengerName, Boolean available, SeatType type) {
+        this.passengerName = passengerName;
+        this.available = available;
+        this.type = type;
+    }
+
+    public void setPassengerName(String name) {
+        passengerName = name;
+    }
+
+    public String getPassengerName() {
+        return passengerName;
+    }
+
+    public void setAvailable(Boolean availability) {
+        available = availability;
+    }
+
+    public Boolean getAvailable() {
+        return available;
+    }
+
+    public SeatType getType() {
+        return type;
+    }
+
+    public String toString() {
+        if (available) {
+            return "Available " + type;
+        } else {
+            return passengerName + " " + type;
+        }
+    }
+}
+
+
